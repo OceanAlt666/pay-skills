@@ -17,7 +17,7 @@ OceanAlt answers one question before money moves: should this payment to this ad
 - `POST /api/x402/decision` ($0.002): decision on one payee address. Body: `{ "to": "<address>", "network": "base" }`.
 - `GET /api/x402/trace?addr=<address>` ($0.01): where the address's recent USDT came from, and whether any hop touches frozen, sanctioned, mixer or scam addresses.
 - `POST /api/x402/batch` ($0.01): screen up to 25 addresses in one call. Body: `{ "addresses": ["..."] }`.
-- `POST /api/x402/credits` ($0.05): buys 100 decision calls, valid 365 days. The response returns a token once; send it as `X-OceanAlt-Credit` on later decision calls instead of paying each time.
+- `POST /api/x402/credits` ($0.10): buys 100 decision calls, valid 365 days. The response returns a token once; send it as `X-OceanAlt-Credit` on later decision calls instead of paying each time.
 
 Payment: x402, USDC on Solana mainnet or Base.
 

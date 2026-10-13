@@ -35,7 +35,7 @@
       "post": {
         "operationId": "x402_decision_post",
         "summary": "Paid: decision + settlement",
-        "description": "Same shape as /api/decide, plus x402 settlement ($0.002/call, or $0.05 for a 100-call credit pack). Unpaid requests get a 402 with a payment-required quote header.\n\nExample:\ncurl -i -X POST \"https://oceanalt.com/api/x402/decision\" -H \"content-type: application/json\" -d '{\"to\":\"0x…\"}'",
+        "description": "Same shape as /api/decide, plus x402 settlement ($0.002/call, or $0.10 for a 100-call credit pack). Unpaid requests get a 402 with a payment-required quote header.\n\nExample:\ncurl -i -X POST \"https://oceanalt.com/api/x402/decision\" -H \"content-type: application/json\" -d '{\"to\":\"0x…\"}'",
         "tags": [
           "paid (x402)"
         ],
@@ -223,7 +223,7 @@
       "post": {
         "operationId": "x402_credits_post",
         "summary": "Paid: decision credit pack",
-        "description": "One $0.05 payment buys 100 decision calls, valid 365 days. The response shows a token once; send it as the X-OceanAlt-Credit header on /api/x402/decision and each call uses one credit.\n\nExample:\ncurl -i -X POST \"https://oceanalt.com/api/x402/credits\"",
+        "description": "One $0.10 payment buys 100 decision calls, valid 365 days. The response shows a token once; send it as the X-OceanAlt-Credit header on /api/x402/decision and each call uses one credit.\n\nExample:\ncurl -i -X POST \"https://oceanalt.com/api/x402/credits\"",
         "tags": [
           "paid (x402)"
         ],
@@ -234,7 +234,7 @@
           "price": {
             "mode": "fixed",
             "currency": "USD",
-            "amount": "0.05"
+            "amount": "0.1"
           }
         },
         "requestBody": {
