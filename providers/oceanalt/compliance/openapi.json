@@ -4,7 +4,7 @@
     "title": "OceanAlt — compliance layer for agent payments",
     "version": "1.0.0",
     "summary": "Before your agent pays, call OceanAlt once.",
-    "description": "Free, no-signup, CORS-enabled compliance screening and payment decisions for autonomous agents.\n\nEvery verdict comes with verifiable evidence — which sanctions list, which issuer freeze, which on-chain path — so an agent (or its auditor) can check the reasoning rather than trust a score.\n\nCoverage: 8 EVM chains (ethereum, base, bsc, polygon, arbitrum, optimism, avalanche, arc) + TRON + Bitcoin + Solana.\nThe payment gateway runs 11 gates before settlement: Attribution (KYA) → Revocation check → Identity proof (anti-impersonation) → KYC gate (optional) → Per-payment limit → Daily cumulative limit → Payee allowlist → Mandate-intent match (anti prompt-injection) → AML sanctions & risk screening → Behavioral anomaly detection (optional) → Replay & double-spend prevention.\n\nLanguage: human-readable fields default to English. Pass `lang=zh` for Chinese. `signal_keys` is language-independent — branch on it.\n\nLimits of the claim: compliance screening is not full or licensed AML compliance, and a `clear` / `allow` result is not proof of safety — absence of evidence is not evidence of absence. Enforce your own mandate regardless.\n\nAPI keys: optional and only ever raise limits (POST /api/access-keys). A key's holder may additionally restrict it — scopes (screen_address, screen_endpoint, decide, payee_decide, batch_screen, trace_funds, evidence_bundle, intent_check, baseline_lookup), a source-IP allowlist, and an expiry — in which case a call outside those limits is refused 403 with reason_code key_scope_denied or key_ip_denied, and a call with an expired key is served at the anonymous level with key_rejected: expired. Keys with no restrictions set, and calls with no key at all, are unaffected. See /api/access-keys/settings.\n\nIdempotency: the POST /api/pay payment call and `rotate` accept an `Idempotency-Key` header (semantics per draft-ietf-httpapi-idempotency-key-header). Same credential + same key + same JSON body within 24 hours returns the original status and body with `Idempotent-Replayed: true`; nothing runs twice and the retry is not recorded as a replay attack. Keep the same nonce when retrying. Calls without the header are unchanged.\n\nWebhooks: notifications to a URL configured in the console are signed per Standard Webhooks (webhook-id, webhook-timestamp, webhook-signature = v1,base64 HMAC-SHA256). Reject timestamps more than 300 seconds away. Failed deliveries are retried up to 5 attempts with the same webhook-id. See the top-level `webhooks` section.",
+    "description": "Four paid x402 operations for agent payments. POST /api/x402/decision returns allow, review or decline for one payee address, with the list, source and date behind any match and a signed receipt. GET /api/x402/trace follows USDT inflows on TRON. POST /api/x402/batch screens up to 25 addresses. POST /api/x402/credits buys 100 decision calls.\n\nPayment: x402, USDC on Solana mainnet or Base. Unpaid requests return 402 with a machine-readable quote.\n\nHuman-readable fields default to English; pass lang=zh for Chinese. signal_keys is language-independent, so branch on it.",
     "contact": {
       "name": "OceanAlt",
       "url": "https://oceanalt.com",
@@ -100,7 +100,18 @@
           "429": {
             "description": "Rate limited (60 requests/min per IP). Honour `retry-after`."
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "X-OceanAlt-Credit",
+            "in": "header",
+            "required": false,
+            "description": "Optional. A credit token from POST /api/x402/credits. With it, the call uses one credit and needs no x402 payment; the response carries x-oceanalt-credits-remaining.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/api/x402/trace": {
@@ -250,11 +261,39 @@
         },
         "responses": {
           "200": {
-            "description": "Screening / decision result",
+            "description": "Credit pack bought: 100 decision calls. The token is shown once; store it. The pack activates when this payment settles.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "type": "object",
+                  "required": [
+                    "credit_token",
+                    "credits",
+                    "expires_at"
+                  ],
+                  "properties": {
+                    "credit_token": {
+                      "type": "string",
+                      "description": "Send as header X-OceanAlt-Credit on POST /api/x402/decision. Shown only in this response."
+                    },
+                    "credits": {
+                      "type": "integer",
+                      "example": 100
+                    },
+                    "expires_at": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "shown_once": {
+                      "type": "boolean"
+                    },
+                    "use": {
+                      "type": "string"
+                    },
+                    "note": {
+                      "type": "string"
+                    }
+                  }
                 }
               }
             }

@@ -15,7 +15,7 @@ OceanAlt answers one question before money moves: should this payment to this ad
 ## Endpoints
 
 - `POST /api/x402/decision` ($0.002): decision on one payee address. Body: `{ "to": "<address>", "network": "base" }`.
-- `GET /api/x402/trace?addr=<address>` ($0.01): where the address's recent USDT came from, and whether any hop touches frozen, sanctioned, mixer or scam addresses.
+- `GET /api/x402/trace?addr=<address>` ($0.01): TRON addresses only. Follows the largest USDT inflow path upstream, up to three hops, and reports frozen, sanctioned, mixer or scam addresses on that path. This is a main-path trace, not an exhaustive graph search.
 - `POST /api/x402/batch` ($0.01): screen up to 25 addresses in one call. Body: `{ "addresses": ["..."] }`.
 - `POST /api/x402/credits` ($0.10): buys 100 decision calls, valid 365 days. The response returns a token once; send it as `X-OceanAlt-Credit` on later decision calls instead of paying each time.
 
@@ -23,7 +23,7 @@ Payment: x402, USDC on Solana mainnet or Base.
 
 ## Spend-aware usage
 
-- Agents that check more than a handful of payees should buy a credit pack once, not pay per call.
+- Buy a credit pack if you expect more than 50 decision calls within 365 days. Below 50, paying per call costs less; at 50, the cost is the same.
 - Use `batch` for payout lists instead of one decision per address.
-- Treat `review` as "a person should look", not as a block.
+- On `review`, hold the payment until a person approves it. `review` asks for human approval; it is not a final `decline`.
 - A clean result means no match on the lists we cover at that time. It is not a guarantee about the payee.
